@@ -1,5 +1,4 @@
 import asyncio
-import base64
 import os
 from pathlib import Path
 import urllib
@@ -10,28 +9,20 @@ import asyncclick as click
 import httpx
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt, Confirm
-from rich.markdown import Markdown
+from rich.prompt import Prompt
 from rich.table import Table
-from rich.live import Live
-from rich.spinner import Spinner
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.syntax import Syntax
-from rich.json import JSON
 from rich import box
 from dotenv import load_dotenv, set_key
 
 from a2a.client import A2ACardResolver, A2AClient
 from a2a.extensions.common import HTTP_EXTENSION_HEADER
 from a2a.types import (
-    FilePart,
-    FileWithBytes,
     GetTaskRequest,
     JSONRPCErrorResponse,
     Message,
     MessageSendConfiguration,
     MessageSendParams,
-    Part,
     SendMessageRequest,
     SendStreamingMessageRequest,
     Task,
