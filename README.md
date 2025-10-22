@@ -7,7 +7,7 @@ The client will use streaming if the server supports it.
 ## Prerequisites
 
 - Python 3.12 or higher
-- UV
+- [UV](https://docs.astral.sh/uv/)
 - A running A2A server
 
 ## Running the CLI
