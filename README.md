@@ -1,3 +1,9 @@
+# Meet Telminator, your agent‑of‑agents.
+
+Don’t pick tools. State your goal. Telminator discovers the best agents, connects them, and gets it done — across any framework, no lock‑in
+
+try now [Telminator](https://app.telminator.com) 
+
 # A2A CLI
 
 The CLI is a small host application that demonstrates the capabilities of an `A2AClient`. It supports reading a server's `AgentCard` and text-based collaboration with a remote agent. All content received from the A2A server is printed to the console.
@@ -11,6 +17,11 @@ The client will use streaming if the server supports it.
 - A running A2A server
 
 ## Running the CLI
+
+0. Clone the repo 
+    ```bash
+    git clone https://github.com/dil34556/Agent-CLI.git
+    ```
 
 1. Navigate to the CLI sample directory:
 
