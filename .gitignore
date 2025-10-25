@@ -1,1 +1,5 @@
-/home/dil/Agent-CLI/cli/.a2a_config
+cli/.a2a_config/
+cli/__init__.py
+cli/uv.lock
+cli/__pycache__/
+.env
