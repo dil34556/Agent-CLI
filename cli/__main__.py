@@ -1,5 +1,4 @@
 import asyncio
-import os
 from pathlib import Path
 import urllib
 import warnings
@@ -13,11 +12,7 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich import box
 from rich.text import Text
-from rich.align import Align
-from rich.live import Live
-from rich.layout import Layout
-from rich.markdown import Markdown
-from dotenv import load_dotenv, set_key
+from dotenv import load_dotenv
 from a2a.client import A2ACardResolver, A2AClient
 from a2a.extensions.common import HTTP_EXTENSION_HEADER
 from a2a.types import (
@@ -36,7 +31,6 @@ from a2a.types import (
     TextPart,
 )
 import json
-import sys
 import time
 from datetime import datetime
 
@@ -57,18 +51,18 @@ load_dotenv(ENV_FILE)
 def animated_banner():
     """Display animated Telminator banner"""
     banner_lines = [
-        "╔════════════════════════════════════════════════════════════╗",
-        "║                                                            ║",
-        "║   ████████╗███████╗██╗     ███╗   ███╗ ██╗ ███╗   ██╗      ║",
-        "║   ╚══██╔══╝██╔════╝██║     ████╗ ████║ ██║ ████╗  ██║      ║",
-        "║      ██║   █████╗  ██║     ██╔████╔██║ ██║ ██╔██╗ ██║      ║",
-        "║      ██║   ██╔══╝  ██║     ██║╚██╔╝██║ ██║ ██║╚██╗██║      ║",
-        "║      ██║   ███████╗███████╗██║ ╚═╝ ██║ ██║ ██║ ╚████║      ║",
-        "║      ╚═╝   ╚══════╝╚══════╝╚═╝     ╚═╝ ╚═╝ ╚═╝  ╚═══╝      ║",
-        "║                                                            ║",
-        "║                                                            ║",
-        "║                                                            ║",
-        "╚════════════════════════════════════════════════════════════╝",
+        "╔═══════════════════════════════════════════════════════════════════╗",
+        "║                                                                   ║",
+        "║   ████████╗ ███████╗ ██╗      ███╗   ███╗ ██╗ ███╗   ██╗  ██╗     ║",
+        "║   ╚══██╔══╝ ██╔════╝ ██║      ████╗ ████║ ██║ ████╗  ██║  ██║     ║",
+        "║      ██║    █████╗   ██║      ██╔████╔██║ ██║ ██╔██╗ ██║  ██║     ║",
+        "║      ██║    ██╔══╝   ██║      ██║╚██╔╝██║ ██║ ██║╚██╗██║  ██║     ║",
+        "║      ██║    ███████╗ ███████╗ ██║ ╚═╝ ██║ ██║ ██║ ╚████║  ██║     ║",
+        "║      ╚═╝    ╚══════╝ ╚══════╝ ╚═╝     ╚═╝ ╚═╝ ╚═╝  ╚═══╝  ╚═╝     ║",
+        "║                                                                   ║",
+        "║                                                                   ║",
+        "║                                                                   ║",
+        "╚═══════════════════════════════════════════════════════════════════╝",
     ]
     
     # Animate banner appearance
