@@ -379,93 +379,84 @@ def create_menu_item(icon: str, title: str, description: str, is_selected: bool 
 
 
 def select_agent_interactive(agents_config):
-    """Interactive agent selection with arrow keys"""
+    """Interactive agent selection with scrollable menu"""
     if not agents_config:
         return None
     
     try:
-        import readchar
-        has_readchar = True
+        from simple_term_menu import TerminalMenu
+        has_term_menu = True
     except ImportError:
-        has_readchar = False
+        has_term_menu = False
         console.print(Panel(
-            "[yellow]💡 Tip: Install 'readchar' for better navigation[/yellow]\n\n"
-            "[dim]pip install readchar[/dim]",
+            "[yellow]💡 For better navigation, install:[/yellow]\n\n"
+            "[cyan]pip install simple-term-menu[/cyan]",
             border_style="yellow",
             box=box.ROUNDED
         ))
     
     # Build options
     options = []
+    menu_entries = []
     agent_list = list(agents_config.items())
     
+    # Add agents
     for agent_id, config in agent_list:
         name = config.get('name', 'Unknown')
         url = config['url']
         auth_type = config.get('auth_type', 'none')
-        display_url = url[:50] + '...' if len(url) > 50 else url
+        display_url = url[:40] + '...' if len(url) > 40 else url
         auth_icon = "🔒" if auth_type != 'none' else "🔓"
         
+        # Menu entry with icon and description
+        menu_entry = f"{name} | {auth_icon} {display_url}"
+        menu_entries.append(menu_entry)
+        
         options.append({
-            'icon': '',
-            'title': name,
-            'description': f"{auth_icon} {display_url}",
             'value': ('chat', agent_id, config)
         })
     
-    options.append({
-        'icon': '➕',
-        'title': 'Add New Agent',
-        'description': 'Configure a new AI agent connection',
-        'value': ('add', None, None)
-    })
+    # Add special options
+    menu_entries.append("Add Agent")
+    options.append({'value': ('add', None, None)})
     
-    options.append({
-        'icon': '👋',
-        'title': 'Exit',
-        'description': 'Close Telminator CLI',
-        'value': ('exit', None, None)
-    })
+    menu_entries.append("👋 Exit")
+    options.append({'value': ('exit', None, None)})
     
-    selected_index = 0
+    if has_term_menu:
+        console.clear()
+        
+        # Header
+        console.print(Panel(
+            "[bold cyan]Select Agent[/bold cyan]\n\n"
+            f"[dim]Total Agents: {len(agent_list)} | Use ↑/↓ arrows, Enter to select[/dim]",
+            border_style="cyan",
+            box=box.DOUBLE
+        ))
+        console.print()
+        
+        # Create scrollable terminal menu
+        terminal_menu = TerminalMenu(
+            menu_entries,
+            title="Select an Agent:",
+            menu_cursor="► ",
+            menu_cursor_style=("fg_cyan", "bold"),
+            menu_highlight_style=("bg_cyan", "fg_black"),
+            cycle_cursor=True,
+            clear_screen=False,
+            show_search_hint=True,
+            search_key="/",
+        )
+        
+        selected_index = terminal_menu.show()
+        
+        if selected_index is None:
+            return ('exit', None, None)
+        
+        return options[selected_index]['value']
     
-    if has_readchar:
-        while True:
-            console.clear()
-            
-            # Header
-            console.print(Panel(
-                "[bold cyan]Agent Selection[/bold cyan]\n\n"
-                "[dim]Use ↑/↓ arrow keys to navigate, Enter to select[/dim]",
-                border_style="cyan",
-                box=box.DOUBLE
-            ))
-            console.print()
-            
-            # Display options
-            for idx, option in enumerate(options):
-                is_selected = (idx == selected_index)
-                panel = create_menu_item(
-                    option['icon'],
-                    option['title'],
-                    option['description'],
-                    is_selected
-                )
-                console.print(panel)
-            
-            # Get key input
-            key = readchar.readkey()
-            
-            if key == readchar.key.UP:
-                selected_index = (selected_index - 1) % len(options)
-            elif key == readchar.key.DOWN:
-                selected_index = (selected_index + 1) % len(options)
-            elif key == readchar.key.ENTER or key == '\r' or key == '\n':
-                break
-            elif key == 'q' or key == 'Q':
-                return ('exit', None, None)
     else:
-        # Fallback: numbered selection
+        # Fallback: numbered selection with pagination
         console.print(Panel(
             "[bold cyan]Agent Selection[/bold cyan]",
             border_style="cyan",
@@ -473,26 +464,59 @@ def select_agent_interactive(agents_config):
         ))
         console.print()
         
-        for idx, option in enumerate(options):
-            console.print(f"[bold cyan]{idx + 1}.[/bold cyan] {option['icon']} [bold white]{option['title']}[/bold white]")
-            console.print(f"   [dim]{option['description']}[/dim]\n")
+        page_size = 5
+        total_pages = (len(options) + page_size - 1) // page_size
+        current_page = 0
         
         while True:
+            console.clear()
+            console.print(Panel(
+                "[bold cyan]Agent Selection[/bold cyan]",
+                border_style="cyan",
+                box=box.DOUBLE
+            ))
+            console.print()
+            
+            # Calculate page range
+            start_idx = current_page * page_size
+            end_idx = min(start_idx + page_size, len(options))
+            
+            # Display current page options
+            for idx in range(start_idx, end_idx):
+                display_num = idx + 1
+                entry = menu_entries[idx]
+                console.print(f"[bold cyan]{display_num}.[/bold cyan] {entry}")
+            
+            console.print()
+            console.print(f"[dim]Page {current_page + 1}/{total_pages}[/dim]")
+            
+            if total_pages > 1:
+                console.print("[dim]Commands: [n]ext page, [p]revious page, or enter number[/dim]")
+            
             choice = Prompt.ask(
-                "[bold cyan]Select an option[/bold cyan]",
+                "\n[bold cyan]Select option[/bold cyan]",
                 default="1"
             )
             
+            # Handle pagination
+            if choice.lower() == 'n' and current_page < total_pages - 1:
+                current_page += 1
+                continue
+            elif choice.lower() == 'p' and current_page > 0:
+                current_page -= 1
+                continue
+            
+            # Handle number selection
             try:
                 selected_index = int(choice) - 1
                 if 0 <= selected_index < len(options):
-                    break
+                    return options[selected_index]['value']
                 else:
                     console.print(f"[red]Please enter a number between 1 and {len(options)}[/red]")
+                    time.sleep(1)
             except ValueError:
-                console.print("[red]Please enter a valid number[/red]")
-    
-    return options[selected_index]['value']
+                console.print("[red]Please enter a valid number or command[/red]")
+                time.sleep(1)
 
 
 def build_headers_for_agent(agent_config, additional_headers=None):
@@ -563,7 +587,7 @@ async def completeTask(
         console.print()
         console.print(Panel(
             "[bold cyan]👋 Chat session ended[/bold cyan]\n\n"
-            "[dim]Thanks for using Telminator![/dim]",
+            "[dim]See you...[/dim]",
             border_style="cyan",
             box=box.DOUBLE
         ))
@@ -1006,7 +1030,7 @@ async def cli(
     if add:
         if not agent:
             console.print(Panel(
-                "[bold cyan]➕ Add New Agent[/bold cyan]\n\n"
+                "[bold cyan]Add Agent[/bold cyan]\n\n"
                 "[dim]Enter the agent's base URL[/dim]",
                 border_style="cyan",
                 box=box.ROUNDED
@@ -1050,7 +1074,7 @@ async def cli(
         if action == 'exit':
             console.print()
             console.print(Panel(
-                "[bold cyan]👋 Thanks for using Telminator![/bold cyan]\n\n"
+                "[bold cyan]👋 See you...[/bold cyan]\n\n"
                 "[dim]Come back soon![/dim]",
                 border_style="cyan",
                 box=box.DOUBLE
@@ -1394,7 +1418,7 @@ async def completeTask(
         console.print()
         console.print(Panel(
             "[bold cyan]👋 Chat session ended[/bold cyan]\n\n"
-            "[dim]Thanks for using Telminator![/dim]",
+            "[dim]See you...[/dim]",
             border_style="cyan",
             box=box.DOUBLE
         ))
