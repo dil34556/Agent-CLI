@@ -33,7 +33,7 @@ from a2a.types import (
 import json
 import time
 from datetime import datetime
-
+from src import banner_lines
 # Suppress deprecation warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
@@ -50,21 +50,6 @@ load_dotenv(ENV_FILE)
 
 def animated_banner():
     """Display animated Telminator banner"""
-    banner_lines = [
-        "╔═══════════════════════════════════════════════════════════════════╗",
-        "║                                                                   ║",
-        "║   ████████╗ ███████╗ ██╗      ███╗   ███╗ ██╗ ███╗   ██╗  ██╗     ║",
-        "║   ╚══██╔══╝ ██╔════╝ ██║      ████╗ ████║ ██║ ████╗  ██║  ██║     ║",
-        "║      ██║    █████╗   ██║      ██╔████╔██║ ██║ ██╔██╗ ██║  ██║     ║",
-        "║      ██║    ██╔══╝   ██║      ██║╚██╔╝██║ ██║ ██║╚██╗██║  ██║     ║",
-        "║      ██║    ███████╗ ███████╗ ██║ ╚═╝ ██║ ██║ ██║ ╚████║  ██║     ║",
-        "║      ╚═╝    ╚══════╝ ╚══════╝ ╚═╝     ╚═╝ ╚═╝ ╚═╝  ╚═══╝  ╚═╝     ║",
-        "║                                                                   ║",
-        "║                                                                   ║",
-        "║                                                                   ║",
-        "╚═══════════════════════════════════════════════════════════════════╝",
-    ]
-    
     # Animate banner appearance
     for i, line in enumerate(banner_lines):
         if i == 0 or i == len(banner_lines) - 1:
@@ -422,7 +407,7 @@ def select_agent_interactive(agents_config):
         auth_icon = "🔒" if auth_type != 'none' else "🔓"
         
         options.append({
-            'icon': '🤖',
+            'icon': '',
             'title': name,
             'description': f"{auth_icon} {display_url}",
             'value': ('chat', agent_id, config)
@@ -626,7 +611,7 @@ async def completeTask(
             console=console,
             transient=True
         ) as progress:
-            progress_task = progress.add_task(f"🤖 {agent_name} is thinking...", total=None)
+            progress_task = progress.add_task(f" {agent_name} is thinking...", total=None)
             
             try:
                 response_stream = client.send_message_streaming(
@@ -674,7 +659,7 @@ async def completeTask(
                             if texts and not agent_responded:
                                 progress.stop()
                                 timestamp = datetime.now().strftime("%H:%M:%S")
-                                console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                                console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                                 agent_responded = True
                             
                             for text in texts:
@@ -689,7 +674,7 @@ async def completeTask(
                                 if not agent_responded:
                                     progress.stop()
                                     timestamp = datetime.now().strftime("%H:%M:%S")
-                                    console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                                    console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                                     agent_responded = True
                                 
                                 for text in texts:
@@ -714,7 +699,7 @@ async def completeTask(
                                 if not agent_responded:
                                     progress.stop()
                                     timestamp = datetime.now().strftime("%H:%M:%S")
-                                    console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                                    console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                                     agent_responded = True
                                 
                                 for text in texts:
@@ -725,7 +710,7 @@ async def completeTask(
                         if not agent_responded:
                             progress.stop()
                             timestamp = datetime.now().strftime("%H:%M:%S")
-                            console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                            console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                             agent_responded = True
                         
                         texts = extract_text_from_parts(event.parts if hasattr(event, 'parts') else [])
@@ -798,7 +783,7 @@ async def completeTask(
                 if hasattr(taskResult, 'status') and hasattr(taskResult.status, 'message'):
                     msg = taskResult.status.message
                     timestamp = datetime.now().strftime("%H:%M:%S")
-                    console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                    console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                     texts = extract_text_from_parts(msg.parts if hasattr(msg, 'parts') else [])
                     for text in texts:
                         console.print(text)
@@ -818,7 +803,7 @@ async def completeTask(
             console=console,
             transient=True
         ) as progress:
-            task = progress.add_task(f"🤖 {agent_name} is processing...", total=None)
+            task = progress.add_task(f" {agent_name} is processing...", total=None)
             
             try:
                 event = await client.send_message(
@@ -848,7 +833,7 @@ async def completeTask(
             taskResult = event
         elif isinstance(event, Message):
             timestamp = datetime.now().strftime("%H:%M:%S")
-            console.print(f"\n[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+            console.print(f"\n[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
             texts = extract_text_from_parts(event.parts if hasattr(event, 'parts') else [])
             for text in texts:
                 console.print(text)
@@ -910,7 +895,7 @@ async def cli(
     debug,
     reset,
 ):
-    """🤖 TELMINATOR - A2A Multi-Agent CLI
+    """ TELMINATOR - A2A Multi-Agent CLI
     
     Connect and chat with AI agents using A2A protocol
     """
@@ -961,7 +946,7 @@ async def cli(
             ))
         else:
             table = Table(
-                title="[bold cyan]🤖 Configured Agents[/bold cyan]",
+                title="[bold cyan] Configured Agents[/bold cyan]",
                 box=box.DOUBLE,
                 border_style="cyan",
                 show_header=True,
@@ -1212,7 +1197,7 @@ async def cli(
         info_panel.add_column(style="bold cyan", justify="right")
         info_panel.add_column(style="white")
         
-        info_panel.add_row("🤖 Agent", f"[bold]{card.name or 'Unknown'}[/bold]")
+        info_panel.add_row(" Agent", f"[bold]{card.name or 'Unknown'}[/bold]")
         
         if card.description:
             desc = card.description[:80] + '...' if len(card.description) > 80 else card.description
@@ -1345,7 +1330,7 @@ async def cli(
                     if hasattr(task_response.root, 'result') and hasattr(task_response.root.result, 'history'):
                         for idx, msg in enumerate(task_response.root.result.history):
                             role_color = "blue" if msg.role == "user" else "green"
-                            role_icon = "👤" if msg.role == "user" else "🤖"
+                            role_icon = "👤" if msg.role == "user" else ""
                             role_label = "You" if msg.role == "user" else card.name
                             
                             console.print(f"\n[bold {role_color}]{role_icon} {role_label}:[/bold {role_color}]")
@@ -1457,7 +1442,7 @@ async def completeTask(
             console=console,
             transient=True
         ) as progress:
-            progress_task = progress.add_task(f"🤖 {agent_name} is thinking...", total=None)
+            progress_task = progress.add_task(f" {agent_name} is thinking...", total=None)
             
             try:
                 response_stream = client.send_message_streaming(
@@ -1505,7 +1490,7 @@ async def completeTask(
                             if texts and not agent_responded:
                                 progress.stop()
                                 timestamp = datetime.now().strftime("%H:%M:%S")
-                                console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                                console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                                 agent_responded = True
                             
                             for text in texts:
@@ -1520,7 +1505,7 @@ async def completeTask(
                                 if not agent_responded:
                                     progress.stop()
                                     timestamp = datetime.now().strftime("%H:%M:%S")
-                                    console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                                    console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                                     agent_responded = True
                                 
                                 for text in texts:
@@ -1545,7 +1530,7 @@ async def completeTask(
                                 if not agent_responded:
                                     progress.stop()
                                     timestamp = datetime.now().strftime("%H:%M:%S")
-                                    console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                                    console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                                     agent_responded = True
                                 
                                 for text in texts:
@@ -1556,7 +1541,7 @@ async def completeTask(
                         if not agent_responded:
                             progress.stop()
                             timestamp = datetime.now().strftime("%H:%M:%S")
-                            console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                            console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                             agent_responded = True
                         
                         texts = extract_text_from_parts(event.parts if hasattr(event, 'parts') else [])
@@ -1629,7 +1614,7 @@ async def completeTask(
                 if hasattr(taskResult, 'status') and hasattr(taskResult.status, 'message'):
                     msg = taskResult.status.message
                     timestamp = datetime.now().strftime("%H:%M:%S")
-                    console.print(f"[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+                    console.print(f"[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
                     texts = extract_text_from_parts(msg.parts if hasattr(msg, 'parts') else [])
                     for text in texts:
                         console.print(text)
@@ -1649,7 +1634,7 @@ async def completeTask(
             console=console,
             transient=True
         ) as progress:
-            task = progress.add_task(f"🤖 {agent_name} is processing...", total=None)
+            task = progress.add_task(f" {agent_name} is processing...", total=None)
             
             try:
                 event = await client.send_message(
@@ -1679,7 +1664,7 @@ async def completeTask(
             taskResult = event
         elif isinstance(event, Message):
             timestamp = datetime.now().strftime("%H:%M:%S")
-            console.print(f"\n[dim]{timestamp}[/dim] [bold green]🤖 {agent_name}[/bold green]")
+            console.print(f"\n[dim]{timestamp}[/dim] [bold green] {agent_name}[/bold green]")
             texts = extract_text_from_parts(event.parts if hasattr(event, 'parts') else [])
             for text in texts:
                 console.print(text)
