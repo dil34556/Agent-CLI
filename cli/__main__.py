@@ -383,17 +383,36 @@ def select_agent_interactive(agents_config):
     if not agents_config:
         return None
     
-    try:
-        from simple_term_menu import TerminalMenu
-        has_term_menu = True
-    except ImportError:
-        has_term_menu = False
-        console.print(Panel(
-            "[yellow]💡 For better navigation, install:[/yellow]\n\n"
-            "[cyan]pip install simple-term-menu[/cyan]",
-            border_style="yellow",
-            box=box.ROUNDED
-        ))
+    # Check if we're on Windows or if simple_term_menu is available
+    import platform
+    is_windows = platform.system() == 'Windows'
+    has_term_menu = False
+    
+    if not is_windows:
+        try:
+            from simple_term_menu import TerminalMenu
+            has_term_menu = True
+        except ImportError:
+            pass
+    
+    # If Windows or no term_menu, show the notice once
+    if is_windows or not has_term_menu:
+        if is_windows:
+            console.print(Panel(
+                "[yellow]ℹ️  Windows Detected[/yellow]\n\n"
+                "[dim]Using numbered menu interface\n"
+                "(simple-term-menu not supported on Windows)[/dim]",
+                border_style="yellow",
+                box=box.ROUNDED
+            ))
+        else:
+            console.print(Panel(
+                "[yellow]💡 For better navigation, install:[/yellow]\n\n"
+                "[cyan]pip install simple-term-menu[/cyan]\n\n"
+                "[dim](Linux/Mac only)[/dim]",
+                border_style="yellow",
+                box=box.ROUNDED
+            ))
     
     # Build options
     options = []
@@ -417,13 +436,14 @@ def select_agent_interactive(agents_config):
         })
     
     # Add special options
-    menu_entries.append("Add Agent")
+    menu_entries.append("➕ Add New Agent")
     options.append({'value': ('add', None, None)})
     
     menu_entries.append("👋 Exit")
     options.append({'value': ('exit', None, None)})
     
-    if has_term_menu:
+    # Use terminal menu only on non-Windows systems
+    if has_term_menu and not is_windows:
         console.clear()
         
         # Header
@@ -456,22 +476,25 @@ def select_agent_interactive(agents_config):
         return options[selected_index]['value']
     
     else:
-        # Fallback: numbered selection with pagination
+        # Fallback: numbered selection with pagination (for Windows and systems without term_menu)
         console.print(Panel(
-            "[bold cyan]Agent Selection[/bold cyan]",
+            "[bold cyan]🎯 Agent Selection Menu[/bold cyan]",
             border_style="cyan",
             box=box.DOUBLE
         ))
         console.print()
         
-        page_size = 5
+        page_size = 10  # Increased for better Windows experience
         total_pages = (len(options) + page_size - 1) // page_size
         current_page = 0
         
         while True:
             console.clear()
+            
+            # Banner for Windows
             console.print(Panel(
-                "[bold cyan]Agent Selection[/bold cyan]",
+                "[bold cyan]🎯 Agent Selection Menu[/bold cyan]\n\n"
+                f"[dim]Total Agents: {len(agent_list)} | Page {current_page + 1}/{total_pages}[/dim]",
                 border_style="cyan",
                 box=box.DOUBLE
             ))
@@ -481,20 +504,29 @@ def select_agent_interactive(agents_config):
             start_idx = current_page * page_size
             end_idx = min(start_idx + page_size, len(options))
             
-            # Display current page options
+            # Display current page options with better formatting
             for idx in range(start_idx, end_idx):
                 display_num = idx + 1
                 entry = menu_entries[idx]
-                console.print(f"[bold cyan]{display_num}.[/bold cyan] {entry}")
+                
+                # Highlight special options
+                if idx >= len(agent_list):
+                    console.print(f"[bold yellow]{display_num}.[/bold yellow] [yellow]{entry}[/yellow]")
+                else:
+                    console.print(f"[bold cyan]{display_num}.[/bold cyan] {entry}")
             
             console.print()
-            console.print(f"[dim]Page {current_page + 1}/{total_pages}[/dim]")
+            console.print("[dim]" + "─" * 60 + "[/dim]")
+            console.print()
             
+            # Navigation instructions
             if total_pages > 1:
-                console.print("[dim]Commands: [n]ext page, [p]revious page, or enter number[/dim]")
+                console.print("[dim]Navigation: [n]ext page | [p]revious page | [number] to select[/dim]")
+            else:
+                console.print("[dim]Enter number to select[/dim]")
             
             choice = Prompt.ask(
-                "\n[bold cyan]Select option[/bold cyan]",
+                "\n[bold cyan]Your choice[/bold cyan]",
                 default="1"
             )
             
@@ -505,6 +537,8 @@ def select_agent_interactive(agents_config):
             elif choice.lower() == 'p' and current_page > 0:
                 current_page -= 1
                 continue
+            elif choice.lower() in ['q', 'quit', 'exit']:
+                return ('exit', None, None)
             
             # Handle number selection
             try:
@@ -512,12 +546,11 @@ def select_agent_interactive(agents_config):
                 if 0 <= selected_index < len(options):
                     return options[selected_index]['value']
                 else:
-                    console.print(f"[red]Please enter a number between 1 and {len(options)}[/red]")
-                    time.sleep(1)
+                    console.print(f"[red]❌ Please enter a number between 1 and {len(options)}[/red]")
+                    time.sleep(1.5)
             except ValueError:
-                console.print("[red]Please enter a valid number or command[/red]")
-                time.sleep(1)
-
+                console.print("[red]❌ Please enter a valid number or command (n/p/q)[/red]")
+                time.sleep(1.5)
 
 def build_headers_for_agent(agent_config, additional_headers=None):
     """Build HTTP headers based on agent configuration"""
